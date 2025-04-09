@@ -1,0 +1,18 @@
+@import "tailwindcss";
+@font-face {
+    font-family: "K95";
+    src: url("./assets/fonts/K95Alphabet.ttf");
+ }
+
+@font-face {
+    font-family: "Josefin Sans";
+    src: url("./assets/fonts/JosefinSans-VariableFont_wght.ttf");
+}
+
+
+@theme {
+    --font-k95: K95, sans-serif;
+    --color-rich-black: #02111b;
+    --color-white-smoke: #f5f5f5;
+    --font-josefin: 'Josefin Sans', sans-serif;
+}
