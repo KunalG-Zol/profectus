@@ -1,5 +1,4 @@
-
-from db import Base, engine
+from .db import Base, engine
 
 # Create all tables in the database
 def init_db():
