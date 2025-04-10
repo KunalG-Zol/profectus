@@ -16,3 +16,8 @@
     --color-white-smoke: #f5f5f5;
     --font-josefin: 'Josefin Sans', sans-serif;
 }
+
+body{
+    background: #02111b;
+}
+

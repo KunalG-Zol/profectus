@@ -10,15 +10,12 @@ function App() {
   return (
     <ProjectProvider>
       <BrowserRouter>
-        <Navbar />
-        <div className="container mx-auto px-4">
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/create-project" element={<ProjectForm />} />
-            <Route path="/questions/:projectId" element={<QuestionsForm />} />
-            <Route path="/roadmap/:projectId" element={<Roadmap />} />
-          </Routes>
-        </div>
+        <Routes>
+          <Route path="/" element={<><Navbar isLandingPage={true} /><LandingPage /></>} />
+          <Route path="/create-project" element={<><Navbar /><ProjectForm /></>} />
+          <Route path="/questions/:projectId" element={<><Navbar /><QuestionsForm /></>} />
+          <Route path="/roadmap/:projectId" element={<><Navbar /><Roadmap /></>} />
+        </Routes>
       </BrowserRouter>
     </ProjectProvider>
   )

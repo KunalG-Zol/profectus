@@ -24,27 +24,27 @@ const Navbar = ({ isLandingPage = false }) => {
                     </li>
                 </>
             );
+        } else {
+            return (
+                <>
+                    <li className="relative group">
+                        <span className="cursor-pointer transition-all duration-300 hover:text-gray-300 hover:scale-110 transform inline-block">Home</span>
+                    </li>
+                    <li className="relative group">
+                        <span className="cursor-pointer transition-all duration-300 hover:text-gray-300 hover:scale-110 transform inline-block">Projects</span>
+                    </li>
+                    <li className="relative group">
+                        <span className="cursor-pointer transition-all duration-300 hover:text-gray-300 hover:scale-110 transform inline-block">Pricing</span>
+                    </li>
+                    <li className="relative group">
+                        <span className="cursor-pointer transition-all duration-300 hover:text-gray-300 hover:scale-110 transform inline-block">About</span>
+                    </li>
+                    <li className="relative group">
+                        <span className="cursor-pointer transition-all duration-300 hover:text-gray-300 hover:scale-110 transform inline-block">Profile</span>
+                    </li>
+                </>
+            );
         }
-
-        return (
-            <>
-                <li className="relative group">
-                    <span className="cursor-pointer transition-all duration-300 hover:text-gray-300 hover:scale-110 transform inline-block">Home</span>
-                </li>
-                <li className="relative group">
-                    <span className="cursor-pointer transition-all duration-300 hover:text-gray-300 hover:scale-110 transform inline-block">Projects</span>
-                </li>
-                <li className="relative group">
-                    <span className="cursor-pointer transition-all duration-300 hover:text-gray-300 hover:scale-110 transform inline-block">Pricing</span>
-                </li>
-                <li className="relative group">
-                    <span className="cursor-pointer transition-all duration-300 hover:text-gray-300 hover:scale-110 transform inline-block">About</span>
-                </li>
-                <li className="relative group">
-                    <span className="cursor-pointer transition-all duration-300 hover:text-gray-300 hover:scale-110 transform inline-block">Profile</span>
-                </li>
-            </>
-        );
     };
 
     const renderMobileNavItems = () => {
@@ -59,17 +59,17 @@ const Navbar = ({ isLandingPage = false }) => {
                     </li>
                 </>
             );
+        } else {
+            return (
+                <>
+                    <li className="transition-all duration-300 hover:pl-2 hover:text-gray-300 cursor-pointer py-2">Home</li>
+                    <li className="transition-all duration-300 hover:pl-2 hover:text-gray-300 cursor-pointer py-2">Projects</li>
+                    <li className="transition-all duration-300 hover:pl-2 hover:text-gray-300 cursor-pointer py-2">Pricing</li>
+                    <li className="transition-all duration-300 hover:pl-2 hover:text-gray-300 cursor-pointer py-2">About</li>
+                    <li className="transition-all duration-300 hover:pl-2 hover:text-gray-300 cursor-pointer py-2">Profile</li>
+                </>
+            );
         }
-
-        return (
-            <>
-                <li className="transition-all duration-300 hover:pl-2 hover:text-gray-300 cursor-pointer">Home</li>
-                <li className="transition-all duration-300 hover:pl-2 hover:text-gray-300 cursor-pointer">Projects</li>
-                <li className="transition-all duration-300 hover:pl-2 hover:text-gray-300 cursor-pointer">Pricing</li>
-                <li className="transition-all duration-300 hover:pl-2 hover:text-gray-300 cursor-pointer">About</li>
-                <li className="transition-all duration-300 hover:pl-2 hover:text-gray-300 cursor-pointer">Profile</li>
-            </>
-        );
     };
 
     return (
