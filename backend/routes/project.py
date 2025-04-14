@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 from ..db import get_db
 from ..models.project import Project, Question, Answer
-from ..agents.agents import generate_questions
+from ..agents.questions import generate_questions
 from ..agents.roadmap import generate_roadmap
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
