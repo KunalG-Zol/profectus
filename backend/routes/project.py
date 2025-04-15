@@ -10,44 +10,11 @@ from ..agents.roadmap import generate_roadmap
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
-class ProjectCreate(BaseModel):
-    title: str
-    description: str
 
-class ProjectResponse(BaseModel):
-    id: int
-    title: str
-    description: str
 
-    class Config:
-        orm_mode = True
 
-class QuestionCreate(BaseModel):
-    text: str
-    choices: List[str]
 
-class QuestionResponse(BaseModel):
-    id: int
-    text: str
-    choices: List[str]
 
-    class Config:
-        orm_mode = True
-
-class AnswerCreate(BaseModel):
-    question_id: int
-    selected_choice: str
-
-class AnswerResponse(BaseModel):
-    id: int
-    question_id: int
-    selected_choice: str
-
-    class Config:
-        orm_mode = True
-
-class RoadmapResponse(BaseModel):
-    modules: Dict[str, List[str]]
 
 @router.post("/", response_model=ProjectResponse)
 def create_project(project_data: ProjectCreate, db: Session = Depends(get_db)):

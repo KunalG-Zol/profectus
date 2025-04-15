@@ -8,7 +8,7 @@ const LandingPage = () => {
                 {/* Hero Section */}
                 <div className="max-w-screen-xl mx-auto px-4 py-20 md:py-32 flex flex-col items-center text-center">
                     <h1 className="font-k95 text-white-smoke text-4xl md:text-6xl mb-4 leading-tight">
-                        Turn Your Ideas Into Reality with <span className="text-orange-500">AI-Powered Guidance</span>
+                        Turn your Ideas Into Reality with <span className="text-orange-500">AI-Powered Guidance</span>
                     </h1>
                     <p className="font-josefin text-white-smoke/90 text-lg md:text-xl max-w-3xl mb-8">
                         Profectus helps students and developers refine project ideas with AI-generated questions, structured tasks, and goal tracking.
