@@ -1,6 +1,10 @@
 from typing import Dict, List, Optional, Any
 from pydantic import BaseModel
 
+class ProjectIdea(BaseModel):
+    title: str
+    description: str
+
 class ProjectCreate(BaseModel):
     title: str
     description: str
@@ -13,6 +17,12 @@ class ProjectResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class AnswerCreate(BaseModel):
+    question_id: int
+    selected_choice: str
+
 
 class RoadmapResponse(BaseModel):
     modules: Dict[str, List[str]]
