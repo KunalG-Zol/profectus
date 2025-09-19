@@ -9,6 +9,8 @@ class Project(Base):
     title = Column(String, index=True)
     description = Column(String)
     completed = Column(Boolean, default=False, index=True)
+    user_id = Column(Integer, ForeignKey("user.id"))
+    user = relationship("User", back_populates="projects")
     questions = relationship("Question", back_populates="project")
     modules = relationship("Module", back_populates="project")
 

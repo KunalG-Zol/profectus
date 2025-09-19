@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:39172/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -9,31 +9,74 @@ const api = axios.create({
   },
 });
 
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+export const login = async (username, password) => {
+  const formData = new URLSearchParams();
+  formData.append('username', username);
+  formData.append('password', password);
+
+  const response = await api.post('/auth/token', formData, {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  });
+  if (response.data.access_token) {
+    localStorage.setItem('token', response.data.access_token);
+  }
+  return response.data;
+};
+
+export const register = async (username, email, password) => {
+  const response = await api.post('/auth/register', { username, email, password });
+  if (response.data.access_token) {
+    localStorage.setItem('token', response.data.access_token);
+  }
+  return response.data;
+};
+
 export const createProject = async (title, description) => {
-  const response = await api.post('/projects/', { title, description });
+  const response = await api.post('/api/projects/', { title, description });
+  return response.data;
+};
+
+export const getProjects = async () => {
+  const response = await api.get('/api/projects/');
   return response.data;
 };
 
 export const generateQuestions = async (projectId) => {
-  const response = await api.post(`/projects/${projectId}/generate-questions`);
+  const response = await api.post(`/api/projects/${projectId}/generate-questions`);
   return response.data;
 };
 
 export const submitAnswers = async (projectId, answers) => {
-  const response = await api.post(`/projects/${projectId}/answers`, answers);
+  const response = await api.post(`/api/projects/${projectId}/answers`, answers);
   return response.data;
 };
 
 export const generateRoadmap = async (projectId) => {
-  const response = await api.get(`/projects/${projectId}/roadmap`);
+  const response = await api.post(`/api/projects/${projectId}/generate-roadmap`);
   return response.data;
 };
+
+export const generateProjectIdea = async () => {
+  const response = await api.post('/api/projects/generate-idea');
+  return response.data;
+};
+
 export const getProjectStatus = async (projectId) => {
-  const response = await api.get(`/projects/${projectId}/status`);
+  const response = await api.get(`/api/projects/${projectId}/status`);
   return response.data;
 };
 
 export const completeTask = async (taskId) => {
-  const response = await api.put(`/projects/tasks/${taskId}/complete`);
+  const response = await api.put(`/api/projects/tasks/${taskId}/complete`);
   return response.data;
 };

@@ -1,6 +1,12 @@
 from typing import Dict, List
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
+
+class QuestionsWithChoices(BaseModel):
+    """Questions and Choices for the user"""
+    questions_with_choices: Dict[str, List[str]] = Field(
+        description="Dictionary with questions as keys and lists of choices as values."
+    )
 
 class QuestionCreate(BaseModel):
     text: str
