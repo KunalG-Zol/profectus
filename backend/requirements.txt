@@ -68,3 +68,4 @@ python-jose[cryptography]
 passlib[bcrypt]
 dspy
 google-generativeai
+psycopg2
