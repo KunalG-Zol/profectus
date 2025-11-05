@@ -67,3 +67,7 @@ class ProjectStatusResponse(BaseModel):
     title: str
     completed: bool
     modules: List[ModuleStatus]
+
+class GitHubRepoCreate(BaseModel):
+    repo_name: str
+    description: Optional[str] = None
