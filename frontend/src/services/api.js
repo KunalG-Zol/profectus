@@ -9,6 +9,7 @@ const api = axios.create({
   },
 });
 
+// Automatically add token to all requests
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -16,6 +17,8 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// -------------------- AUTH --------------------
 
 export const login = async (username, password) => {
   const formData = new URLSearchParams();
@@ -41,8 +44,22 @@ export const register = async (username, email, password) => {
   return response.data;
 };
 
-export const createProject = async (title, description) => {
-  const response = await api.post('/api/projects/', { title, description });
+// -------------------- PROJECTS --------------------
+
+// UPDATE THIS FUNCTION for repo creation
+export const createProject = async (title, description, repoName, repoDesc, repoPrivate) => {
+  // Support both new and old calls (for backward compatibility)
+  const payload = repoName !== undefined
+    ? {
+        title,
+        description,
+        repo_name: repoName,
+        repo_desc: repoDesc,
+        repo_private: repoPrivate,
+      }
+    : { title, description };
+
+  const response = await api.post('/api/projects/', payload);
   return response.data;
 };
 

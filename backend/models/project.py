@@ -8,6 +8,8 @@ class Project(Base):
     id = Column(Integer, primary_key=True, unique=True, index=True)
     title = Column(String, index=True)
     description = Column(String)
+    repo_name = Column(String)  # New: Repository name
+    repo_url = Column(String)  # New: Repository URL
     completed = Column(Boolean, default=False, index=True)
     user_id = Column(Integer, ForeignKey("user.id"))
     user = relationship("User", back_populates="projects")

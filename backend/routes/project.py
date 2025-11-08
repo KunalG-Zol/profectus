@@ -8,31 +8,69 @@ from ..models.user import User
 from ..agents.questions import generate_questions
 from ..agents.roadmap import generate_roadmap
 from ..agents.idea_generator import generate_project_idea
-from ..schemas.project import ProjectCreate, ProjectResponse, ModuleCreate, ModuleResponse, TaskCreate, TaskResponse, ProjectStatusResponse, ProjectIdea, AnswerCreate
+from ..schemas.project import (
+    ProjectCreate, ProjectResponse, ModuleCreate, ModuleResponse,
+    TaskCreate, TaskResponse, ProjectStatusResponse, ProjectIdea, AnswerCreate
+)
 from ..schemas.question import QuestionsWithChoices, QuestionResponse
 from ..auth import get_current_user
+from ..services.github_service import GitHubService
 
 # Import the service to update completion status
 from ..services.completion_tracker import mark_completed
 
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
+
 @router.post("/generate-idea", response_model=ProjectIdea)
 def get_project_idea():
     return generate_project_idea()
 
+
 @router.post("/", response_model=ProjectResponse)
-def create_project(project: ProjectCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    db_project = Project(**project.dict(), user_id=current_user.id)
-    db.add(db_project)
-    db.commit()
-    db.refresh(db_project)
-    return db_project
+async def create_project(
+        project: ProjectCreate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    # Create GitHub repository
+    if not current_user.github_access_token:
+        raise HTTPException(status_code=400, detail="GitHub access token not found")
+
+    github = GitHubService(current_user.github_access_token)
+
+    try:
+        # Create repo on GitHub
+        repo = await github.create_repo(
+            name=project.repo_name,
+            description=project.repo_desc or project.description,
+            private=project.repo_private
+        )
+
+        # Create project in database with repo info
+        db_project = Project(
+            title=project.title,
+            description=project.description,
+            user_id=current_user.id,
+            repo_name=repo['name'],
+            repo_url=repo['html_url']
+        )
+        db.add(db_project)
+        db.commit()
+        db.refresh(db_project)
+        return db_project
+
+    except HTTPException as e:
+        raise HTTPException(status_code=e.status_code, detail=f"Failed to create GitHub repository: {e.detail}")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error creating project: {str(e)}")
+
 
 @router.get("/", response_model=List[ProjectResponse])
 def get_projects(db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     projects = db.query(Project).filter(Project.user_id == current_user.id).all()
     return projects
+
 
 @router.post("/{project_id}/generate-questions", response_model=List[QuestionResponse])
 def get_questions(project_id: int, db: Session = Depends(get_db)):
@@ -59,7 +97,6 @@ def get_questions(project_id: int, db: Session = Depends(get_db)):
         db.refresh(question)
 
     return new_questions
-
 
 
 @router.post("/{project_id}/answers", status_code=201)
@@ -153,7 +190,6 @@ def complete_task(task_id: int, db: Session = Depends(get_db)):
     return {"message": "Task completed successfully"}
 
 
-
 @router.post("/{project_id}/generate-roadmap", response_model=ProjectStatusResponse)
 def generate_project_roadmap(project_id: int, db: Session = Depends(get_db)):
     project = db.query(Project).filter(Project.id == project_id).first()
@@ -163,9 +199,6 @@ def generate_project_roadmap(project_id: int, db: Session = Depends(get_db)):
     # Fetch answers for the project
     answers = db.query(Answer).join(Question).filter(Question.project_id == project_id).all()
     if not answers:
-        # Handle case where there are no answers, maybe raise an exception
-        # or generate a roadmap without them, depending on desired behavior.
-        # For now, we'll proceed with an empty qa_pairs dict.
         qa_pairs = {}
     else:
         qa_pairs = {ans.question.text: ans.selected_choice for ans in answers}
@@ -202,8 +235,10 @@ def get_project_status(project_id: int, db: Session = Depends(get_db)):
 
     for module in modules:
         tasks = db.query(Task).filter(Task.module_id == module.id).all()
-        task_status = [{"id": task.id, "description": task.description, "completed": task.completed}
-                       for task in tasks]
+        task_status = [
+            {"id": task.id, "description": task.description, "completed": task.completed}
+            for task in tasks
+        ]
 
         modules_status.append({
             "id": module.id,

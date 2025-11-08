@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import ContributionGraph from './ContributionGraph';
 import { getProjects } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const ProfilePage = () => {
+    const { user } = useAuth();
+
     const [projects, setProjects] = useState([]);
 
     useEffect(() => {
@@ -14,23 +17,28 @@ const ProfilePage = () => {
                 console.error("Failed to fetch projects:", error);
             }
         };
-
         fetchProjects();
     }, []);
 
-    const user = {
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-        avatar: 'https://i.pravatar.cc/150?u=a042581f4e29026024d',
-        bio: 'Software developer and tech enthusiast. Passionate about open source and building cool things.',
+    // Use info from context (set in AuthProvider from backend after login)
+    const profile = {
+        name: user?.name || user?.username || 'No Name',
+        email: user?.email || 'No Email',
+        avatar: user?.avatar_url || 'https://i.pravatar.cc/150?u=a042581f4e29026024d',
+        bio: user?.bio || 'No bio provided. Sync your GitHub bio!',
         stats: {
             projects: projects.length,
-            contributions: 142,
-            followers: 78,
+            // Optionally fetch/recalculate these from GitHub if you add more API calls later.
+            contributions: user?.contributions || 0,
+            followers: user?.followers || 0,
         },
-        latestProject: projects.length > 0 ? { name: projects[0].title, link: `/roadmap/${projects[0].id}` } : { name: 'N/A', link: '#' },
-        mostContributedProject: projects.length > 0 ? { name: projects[0].title, link: `/roadmap/${projects[0].id}` } : { name: 'N/A', link: '#' },
-        mostUsedLanguage: 'JavaScript',
+        latestProject: projects.length > 0
+            ? { name: projects[0].title, link: `/roadmap/${projects[0].id}` }
+            : { name: 'N/A', link: '#' },
+        mostContributedProject: projects.length > 0
+            ? { name: projects[0].title, link: `/roadmap/${projects[0].id}` }
+            : { name: 'N/A', link: '#' },
+        mostUsedLanguage: user?.most_used_language || 'Unknown',
     };
 
     const contributions = [
@@ -49,21 +57,21 @@ const ProfilePage = () => {
                     {/* Left Column: User Info */}
                     <div className="lg:col-span-1 space-y-8">
                         <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-gray-700/50">
-                            <img src={user.avatar} alt="User Avatar" className="w-32 h-32 rounded-full mx-auto mb-4 ring-4 ring-orange-500/70 shadow-md" />
-                            <h1 className="text-3xl font-bold text-center text-white">{user.name}</h1>
-                            <p className="text-gray-400 text-center mb-4">{user.email}</p>
-                            <p className="text-center text-gray-300 mb-6 text-sm">{user.bio}</p>
+                            <img src={profile.avatar} alt="User Avatar" className="w-32 h-32 rounded-full mx-auto mb-4 ring-4 ring-orange-500/70 shadow-md" />
+                            <h1 className="text-3xl font-bold text-center text-white">{profile.name}</h1>
+                            <p className="text-gray-400 text-center mb-4">{profile.email}</p>
+                            <p className="text-center text-gray-300 mb-6 text-sm">{profile.bio}</p>
                             <div className="flex justify-around mb-6 bg-gray-900/50 rounded-lg p-3 border border-gray-700/30">
                                 <div className="text-center">
-                                    <p className="text-2xl font-bold text-orange-500">{user.stats.projects}</p>
+                                    <p className="text-2xl font-bold text-orange-500">{profile.stats.projects}</p>
                                     <p className="text-gray-400 text-xs uppercase tracking-wider">Projects</p>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-2xl font-bold text-orange-500">{user.stats.contributions}</p>
+                                    <p className="text-2xl font-bold text-orange-500">{profile.stats.contributions}</p>
                                     <p className="text-gray-400 text-xs uppercase tracking-wider">Contributions</p>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-2xl font-bold text-orange-500">{user.stats.followers}</p>
+                                    <p className="text-2xl font-bold text-orange-500">{profile.stats.followers}</p>
                                     <p className="text-gray-400 text-xs uppercase tracking-wider">Followers</p>
                                 </div>
                             </div>
@@ -72,21 +80,20 @@ const ProfilePage = () => {
                                 <ul className="space-y-3 text-sm">
                                     <li className="flex justify-between items-center">
                                         <span className="text-gray-400">Most Used Language:</span>
-                                        <span className="font-bold bg-orange-500/20 text-orange-300 px-2 py-1 rounded-md">{user.mostUsedLanguage}</span>
+                                        <span className="font-bold bg-orange-500/20 text-orange-300 px-2 py-1 rounded-md">{profile.mostUsedLanguage}</span>
                                     </li>
                                     <li className="flex justify-between items-center">
                                         <span className="text-gray-400">Latest Project:</span>
-                                        <a href={user.latestProject.link} className="font-bold text-orange-400 hover:text-orange-300 transition-colors duration-300">{user.latestProject.name}</a>
+                                        <a href={profile.latestProject.link} className="font-bold text-orange-400 hover:text-orange-300 transition-colors duration-300">{profile.latestProject.name}</a>
                                     </li>
                                     <li className="flex justify-between items-center">
                                         <span className="text-gray-400">Most Contributed:</span>
-                                        <a href={user.mostContributedProject.link} className="font-bold text-orange-400 hover:text-orange-300 transition-colors duration-300">{user.mostContributedProject.name}</a>
+                                        <a href={profile.mostContributedProject.link} className="font-bold text-orange-400 hover:text-orange-300 transition-colors duration-300">{profile.mostContributedProject.name}</a>
                                     </li>
                                 </ul>
                             </div>
                         </div>
                     </div>
-
                     {/* Right Column: Contribution Graph and Projects */}
                     <div className="lg:col-span-2 space-y-8">
                         <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-gray-700/50">
