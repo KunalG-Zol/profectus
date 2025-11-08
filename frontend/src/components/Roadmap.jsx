@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getProjectStatus, completeTask, generateRoadmap } from '../services/api';
 import { useProjectContext } from '../context/ProjectContext';
-import StartProjectModal from './StartProjectModal';
 
 // SVG Icon Components
 const CheckIcon = ({ className }) => (
@@ -14,7 +13,7 @@ const CheckIcon = ({ className }) => (
 
 const RocketIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2.343a1 1 0 0 1 .993.883l.007.117v3.34a1 1 0 0 1-2 0V3.343a1 1 0 0 1 1-1zm0 14.314a1 1 0 0 1 .993.883l.007.117v3.34a1 1 0 0 1-2 0v-3.34a1 1 0 0 1 1-1zm-7.414-5.414a1 1 0 0 1 .093 1.408l-.093.099-2.36 2.36a1 1 0 0 1-1.497-1.32l.093-.099 2.36-2.36a1 1 0 0 1 1.404-.086zm14.828 0a1 1 0 0 1 1.497 1.32l-.093.099-2.36 2.36a1 1 0 0 1-1.32 0l-2.36-2.36a1 1 0 0 1 0-1.414l2.36-2.36a1 1 0 0 1 1.32 0l2.36 2.36a1 1 0 0 1 0 1.414zM4.586 6.001a1 1 0 0 1 1.32 0l2.36 2.36a1 1 0 0 1 0 1.414l-2.36 2.36a1 1 0 0 1-1.414 0l-2.36-2.36a1 1 0 0 1 0-1.414l2.36-2.36zM12 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"/>
+        <path d="M12 2.343a1 1 0 0 1 .993.883l.007.117v3.34a1 1 0 0 1-2 0V3.343a1 1 0 0 1 1-1zm0 14.314a1 1 0 0 1 .993.883l.007.117v3.34a1 1 0 0 1-2 0v-3.34a1 1 0 0 1 1-1zm-7.414-5.414a1 1 0 0 1 .093 1.408l-.093.099-2.36 2.36a1 1 0 0 1-1.497-1.32l.093-.099 2.36-2.36a1 1 0 0 1 1.404-.086zm14.828 0a1 1 0 0 1 1.497 1.32l-.093.099-2.36 2.36a1 1 0 0 1-1.32 0l-2.36-2.36a1 1 0 0 1 0-1.414l2.36-2.36a1 1 0 0 1 1.32 0l2.36 2.36a1 1 0 0 1 0 1.414zM4.586 6.001a1 1 0 0 1 1.32 0l2.36 2.36a1 1 0 0 1 0 1.414l-2.36 2.36a1 1 0 0 1-1.414 0l-2.36-2.36a1 1 0 0 1 0-1.414l2.36-2.36a1 1 0 0 1 .093-.086zm14.828 0a1 1 0 0 1 1.414 0l2.36 2.36a1 1 0 0 1 0 1.414l-2.36 2.36a1 1 0 0 1-1.414 0l-2.36-2.36a1 1 0 0 1 0-1.414l2.36-2.36zM12 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"/>
     </svg>
 );
 
@@ -24,22 +23,21 @@ const Roadmap = () => {
   const { setError } = useProjectContext();
   const [projectStatus, setProjectStatus] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [showStartProjectModal, setShowStartProjectModal] = useState(false);
-
-  const fetchProjectStatus = async () => {
-    try {
-      setLoading(true);
-      const data = await getProjectStatus(projectId);
-      setProjectStatus(data);
-    } catch (error) {
-      setError(error.message);
-      alert('Failed to load project status: ' + error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   useEffect(() => {
+    const fetchProjectStatus = async () => {
+      try {
+        setLoading(true);
+        const data = await getProjectStatus(projectId);
+        setProjectStatus(data);
+      } catch (error) {
+        setError(error.message);
+        alert('Failed to load project status: ' + error.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchProjectStatus();
   }, [projectId, setError]);
 
@@ -95,23 +93,13 @@ const Roadmap = () => {
         <h2 className="text-4xl font-bold mb-4 font-josefin mt-4">Project Roadmap</h2>
         <p className="mb-8 text-lg text-gray-600">No roadmap has been generated yet for this project.</p>
         <motion.button
-          onClick={() => setShowStartProjectModal(true)}
+          onClick={handleGenerateRoadmap}
           className="bg-blue-600 text-white font-bold py-4 px-8 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-300 text-lg shadow-lg hover:shadow-xl"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          Start Project
+          Generate Roadmap
         </motion.button>
-
-        {showStartProjectModal && (
-          <StartProjectModal
-            projectId={projectId}
-            projectTitle={projectStatus.title}
-            projectDescription={projectStatus.description}
-            onClose={() => setShowStartProjectModal(false)}
-            onProjectStarted={handleGenerateRoadmap} // Trigger roadmap generation after project started
-          />
-        )}
       </div>
     );
   }

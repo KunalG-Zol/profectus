@@ -21,7 +21,6 @@ const ProjectForm = () => {
       const newProject = await createProject(title, description);
       navigate(`/questions/${newProject.id}`);
     } catch (error) {
-      console.error(error);
       alert('Error creating project: ' + error.message);
     } finally {
       setLoading(false);
@@ -35,7 +34,6 @@ const ProjectForm = () => {
       setTitle(idea.title);
       setDescription(idea.description);
     } catch (error) {
-      console.error(error);
       alert('Error generating project idea: ' + error.message);
     } finally {
       setIdeaLoading(false);

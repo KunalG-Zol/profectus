@@ -80,8 +80,3 @@ export const completeTask = async (taskId) => {
   const response = await api.put(`/api/projects/tasks/${taskId}/complete`);
   return response.data;
 };
-
-export const createGithubRepository = async (projectId, repoData) => {
-  const response = await api.post(`/api/projects/${projectId}/github-repo`, repoData);
-  return response.data;
-};

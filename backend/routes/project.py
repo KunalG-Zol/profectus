@@ -218,28 +218,3 @@ def get_project_status(project_id: int, db: Session = Depends(get_db)):
         "completed": project.completed,
         "modules": modules_status
     }
-
-
-from ..services.github_service import GitHubService
-from ..schemas.project import GitHubRepoCreate
-
-@router.post("/{project_id}/github-repo")
-async def create_github_repository(project_id: int, repo_data: GitHubRepoCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    if not current_user.github_access_token:
-        raise HTTPException(
-            status_code=400,
-            detail={"error": "GITHUB_NOT_LINKED", "message": "GitHub account not linked. Please link your GitHub account first."}
-        )
-
-    project = db.query(Project).filter(Project.id == project_id, Project.user_id == current_user.id).first()
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found or you don't have access to it.")
-
-    github_service = GitHubService(current_user.github_access_token)
-    try:
-        repo_info = await github_service.create_repository(repo_data.repo_name, repo_data.description)
-        return {"message": "GitHub repository created successfully!", "repo_url": repo_info["html_url"]}
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")

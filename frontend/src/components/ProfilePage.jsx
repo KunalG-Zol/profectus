@@ -3,7 +3,6 @@ import ContributionGraph from './ContributionGraph';
 import { getProjects } from '../services/api';
 
 const ProfilePage = () => {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const [projects, setProjects] = useState([]);
 
     useEffect(() => {
@@ -68,13 +67,7 @@ const ProfilePage = () => {
                                     <p className="text-gray-400 text-xs uppercase tracking-wider">Followers</p>
                                 </div>
                             </div>
-                            <a 
-                                href={`${API_URL}/auth/github/login`}
-                                className="block text-center w-full bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg"
-                            >
-                                Connect to GitHub
-                            </a>
-                            <div className="border-t border-gray-700/50 pt-4 mt-6">
+                            <div className="border-t border-gray-700/50 pt-4">
                                 <h3 className="text-lg font-semibold mb-3 text-white uppercase tracking-wider">Details</h3>
                                 <ul className="space-y-3 text-sm">
                                     <li className="flex justify-between items-center">
