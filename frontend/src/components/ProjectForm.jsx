@@ -5,20 +5,29 @@ import { createProject, generateProjectIdea } from '../services/api';
 const ProjectForm = () => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
+  const [repoName, setRepoName] = useState('');
+  const [repoDesc, setRepoDesc] = useState('');
+  const [repoPrivate, setRepoPrivate] = useState(false);
+
   const [loading, setLoading] = useState(false);
   const [ideaLoading, setIdeaLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!title || !description) {
-      alert('Please fill all fields');
+    if (!title || !description || !repoName) {
+      alert('Please fill all required fields.');
       return;
     }
-
     try {
       setLoading(true);
-      const newProject = await createProject(title, description);
+      const newProject = await createProject(
+        title,
+        description,
+        repoName,
+        repoDesc,
+        repoPrivate
+      );
       navigate(`/questions/${newProject.id}`);
     } catch (error) {
       alert('Error creating project: ' + error.message);
@@ -33,6 +42,7 @@ const ProjectForm = () => {
       const idea = await generateProjectIdea();
       setTitle(idea.title);
       setDescription(idea.description);
+      setRepoName(idea.title.replace(/\s+/g, '-').toLowerCase()); // Suggest repo name
     } catch (error) {
       alert('Error generating project idea: ' + error.message);
     } finally {
@@ -47,9 +57,9 @@ const ProjectForm = () => {
           <h1 className="text-4xl md:text-5xl font-k95 text-white-smoke mb-2">Let's Get Started</h1>
           <p className="text-lg text-white-smoke/80">Tell us about your new project idea.</p>
         </div>
-
         <div className="bg-[#01080e]/60 p-8 rounded-2xl shadow-2xl border border-orange-500/20 backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="space-y-8">
+            {/* Project Fields */}
             <div>
               <label className="block text-sm font-bold mb-2 tracking-wider" htmlFor="title">
                 Project Title
@@ -64,7 +74,6 @@ const ProjectForm = () => {
                 required
               />
             </div>
-
             <div>
               <label className="block text-sm font-bold mb-2 tracking-wider" htmlFor="description">
                 Project Description
@@ -73,12 +82,50 @@ const ProjectForm = () => {
                 id="description"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe your project's goals, key features, target audience, and the technologies you plan to use."
-                className="w-full px-4 py-3 bg-rich-black/50 border-2 border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all min-h-[200px] resize-y"
+                placeholder="Describe your project's goals, features, and technologies."
+                className="w-full px-4 py-3 bg-rich-black/50 border-2 border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all min-h-[150px] resize-y"
                 required
               />
             </div>
-
+            {/* Repository Fields */}
+            <div className="mt-8">
+              <h2 className="text-lg font-bold mb-4">GitHub Repository Details</h2>
+              <label className="block text-sm font-bold mb-2" htmlFor="repoName">
+                Repository Name
+              </label>
+              <input
+                id="repoName"
+                type="text"
+                value={repoName}
+                onChange={(e) => setRepoName(e.target.value)}
+                placeholder="my-new-ai-project"
+                className="w-full px-4 py-3 bg-rich-black/50 border-2 border-gray-700 rounded-lg"
+                required
+              />
+              <label className="block text-sm font-bold mb-2 mt-4" htmlFor="repoDesc">
+                Repository Description
+              </label>
+              <input
+                id="repoDesc"
+                type="text"
+                value={repoDesc}
+                onChange={(e) => setRepoDesc(e.target.value)}
+                placeholder="Short description"
+                className="w-full px-4 py-3 bg-rich-black/50 border-2 border-gray-700 rounded-lg"
+              />
+              <div className="flex items-center mt-4">
+                <input
+                  type="checkbox"
+                  id="repoPrivate"
+                  checked={repoPrivate}
+                  onChange={() => setRepoPrivate(!repoPrivate)}
+                />
+                <label htmlFor="repoPrivate" className="ml-2 text-sm font-bold">
+                  Private Repository
+                </label>
+              </div>
+            </div>
+            {/* Buttons */}
             <div className="flex items-center space-x-4">
               <button
                 type="submit"

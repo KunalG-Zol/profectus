@@ -8,15 +8,22 @@ class ProjectIdea(BaseModel):
 class ProjectCreate(BaseModel):
     title: str
     description: str
+    repo_name: str
+    repo_desc: Optional[str] = ""
+    repo_private: Optional[bool] = False
 
 class ProjectResponse(BaseModel):
     id: int
     title: str
     description: str
     completed: bool = False
+    repo_name: Optional[str] = None
+    repo_url: Optional[str] = None
 
     class Config:
         orm_mode = True
+
+
 
 
 class AnswerCreate(BaseModel):
