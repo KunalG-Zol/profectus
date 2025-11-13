@@ -25,7 +25,7 @@ const HelpPanel = ({ helpData, onClose, loading }) => {
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
       transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-      className="fixed right-0 top-0 h-full w-full md:w-[500px] bg-white shadow-2xl z-50 overflow-y-auto"
+      className="fixed right-0 top-0 h-full w-full md:w-[500px] lg:w-1/2 bg-white shadow-2xl z-50 overflow-y-auto"
     >
       <div className="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 shadow-lg">
         <div className="flex justify-between items-center">
@@ -461,51 +461,51 @@ const Roadmap = () => {
 
   return (
     <>
-      <motion.div
-        animate={{ marginRight: showHelp ? '500px' : '0' }}
-        transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-        className="max-w-5xl mx-auto mt-10 mb-10 p-8 transition-all duration-300"
-      >
-        <h2 className="text-4xl font-bold mb-2 font-josefin text-blue-900">{projectStatus.title}</h2>
-        <p className="mb-10 text-lg text-gray-600">
-          Project Status: <span className={`font-semibold ${projectStatus.completed ? 'text-green-600' : 'text-amber-600'}`}>
-            {projectStatus.completed ? 'Completed' : 'In Progress'}
-          </span>
-        </p>
+      <div className="flex justify-center">
+        <motion.div
+          className="max-w-5xl mx-auto mt-10 mb-10 p-8 transition-all duration-300 flex-grow w-full"
+        >
+          <h2 className="text-4xl font-bold mb-2 font-josefin text-blue-900">{projectStatus.title}</h2>
+          <p className="mb-10 text-lg text-gray-600">
+            Project Status: <span className={`font-semibold ${projectStatus.completed ? 'text-green-600' : 'text-amber-600'}`}>
+              {projectStatus.completed ? 'Completed' : 'In Progress'}
+            </span>
+          </p>
 
-        <div className="relative">
-          <div className="absolute left-5 top-2 bottom-2 w-1 bg-gray-200 rounded-full"></div>
+          <div className="relative">
+            <div className="absolute left-5 top-2 bottom-2 w-1 bg-gray-200 rounded-full"></div>
 
-          {topLevelModules.map((module, index) => (
-            <ModuleDisplay
-              key={module.id}
-              module={module}
-              index={index}
-              depth={0}
-              handleCompleteTask={handleCompleteTask}
-              handleCheckProgress={handleCheckProgress}
-              handleGetHelp={handleGetHelp}
-              checkingProgress={checkingProgress}
-              gettingHelp={gettingHelp}
+            {topLevelModules.map((module, index) => (
+              <ModuleDisplay
+                key={module.id}
+                module={module}
+                index={index}
+                depth={0}
+                handleCompleteTask={handleCompleteTask}
+                handleCheckProgress={handleCheckProgress}
+                handleGetHelp={handleGetHelp}
+                checkingProgress={checkingProgress}
+                gettingHelp={gettingHelp}
+              />
+            ))}
+          </div>
+
+          <Link to="/" className="mt-12 inline-block bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-transform duration-300 hover:scale-105">
+            Create New Project
+          </Link>
+        </motion.div>
+
+        {/* Help Panel */}
+        <AnimatePresence>
+          {showHelp && (
+            <HelpPanel
+              helpData={helpData}
+              onClose={handleCloseHelp}
+              loading={gettingHelp}
             />
-          ))}
-        </div>
-
-        <Link to="/" className="mt-12 inline-block bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-transform duration-300 hover:scale-105">
-          Create New Project
-        </Link>
-      </motion.div>
-
-      {/* Help Panel */}
-      <AnimatePresence>
-        {showHelp && (
-          <HelpPanel
-            helpData={helpData}
-            onClose={handleCloseHelp}
-            loading={gettingHelp}
-          />
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Overlay */}
       <AnimatePresence>
