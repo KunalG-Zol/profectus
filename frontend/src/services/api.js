@@ -99,37 +99,11 @@ export const completeTask = async (taskId) => {
 };
 
 export const checkTaskProgress = async (taskId) => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_URL}/tasks/${taskId}/check-progress`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Failed to check task progress');
-  }
-
-  return response.json();
+  const response = await api.post(`/api/projects/tasks/${taskId}/check-progress`);
+  return response.data;
 };
 
 export const getTaskHelp = async (taskId) => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_URL}/tasks/${taskId}/help`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-  });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.detail || 'Failed to get task help');
-  }
-
-  return response.json();
+  const response = await api.get(`/api/projects/tasks/${taskId}/help`);
+  return response.data;
 };
