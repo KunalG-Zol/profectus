@@ -1,5 +1,6 @@
 from typing import Dict, List, Optional, Any
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
+
 
 class ProjectIdea(BaseModel):
     title: str
@@ -69,6 +70,8 @@ class ModuleStatus(BaseModel):
     name: str
     completed: bool
     tasks: List[TaskStatus]
+    sub_modules: List['ModuleStatus'] = []  # NEW: Recursive structure
+    model_config = ConfigDict(from_attributes=True)
 
 class ProjectStatusResponse(BaseModel):
     id: int

@@ -207,18 +207,39 @@ def generate_project_roadmap(project_id: int, db: Session = Depends(get_db)):
     roadmap_data = generate_roadmap(project.description, qa_pairs)
 
     # Save the roadmap to the database
-    for module in roadmap_data:  # roadmap_data assumed to be list of modules with name, description, tasks
+    for module in roadmap_data:
         db_module = Module(
             name=module.name,
             description=module.description,
-            project_id=project_id
+            project_id=project_id,
+            parent_module_id=None  # Top-level module
         )
         db.add(db_module)
         db.commit()
         db.refresh(db_module)
+
+        # Add tasks for the module
         for task_desc in module.tasks:
             db_task = Task(description=task_desc, module_id=db_module.id)
             db.add(db_task)
+
+        # NEW: Handle sub-modules
+        for sub_module in module.sub_modules:
+            db_sub_module = Module(
+                name=sub_module.name,
+                description=sub_module.description,
+                project_id=project_id,
+                parent_module_id=db_module.id  # Link to parent
+            )
+            db.add(db_sub_module)
+            db.commit()
+            db.refresh(db_sub_module)
+
+            # Add tasks for the sub-module
+            for task_desc in sub_module.tasks:
+                db_task = Task(description=task_desc, module_id=db_sub_module.id)
+                db.add(db_task)
+
         db.commit()
 
     # Return the updated project status

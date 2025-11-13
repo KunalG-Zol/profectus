@@ -4,10 +4,17 @@ import dspy
 import os
 
 
+class SubModule(BaseModel):
+    name: str = Field(description="The name of the sub-module.")
+    description: str = Field(description="A detailed description for the sub-module.")
+    tasks: List[str] = Field(description="A list of actionable subtasks for this sub-module.")
+
 class RoadmapModule(BaseModel):
     name: str = Field(description="The name of the module or major step.")
     description: str = Field(description="A detailed description for the module.")
+    sub_modules: List[SubModule] = Field(default=[], description="Optional list of sub-modules.")  # NEW
     tasks: List[str] = Field(description="A list of actionable subtasks for this module.")
+
 
 
 class RoadmapSignature(dspy.Signature):
