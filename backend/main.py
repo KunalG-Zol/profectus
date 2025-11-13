@@ -32,4 +32,3 @@ app.include_router(github.router)
 @app.get("/")
 def read_root():
     return {"message": "Welcome to Profectus API"}
-    

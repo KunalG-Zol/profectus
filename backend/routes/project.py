@@ -20,6 +20,9 @@ from ..services.github_service import GitHubService
 from ..services.completion_tracker import mark_completed
 from fastapi import Body
 from ..schemas.project import ProjectIdeaRequest
+from ..agents.progress_checker import check_task_progress
+from ..agents.task_helper import get_task_help
+
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
 
@@ -275,3 +278,120 @@ def get_project_status(project_id: int, db: Session = Depends(get_db)):
         "completed": project.completed,
         "modules": modules_status
     }
+
+
+@router.post("/tasks/{task_id}/check-progress")
+async def check_task_progress_endpoint(
+        task_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    # Get the task
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Get the module and project
+    module = db.query(Module).filter(Module.id == task.module_id).first()
+    project = db.query(Project).filter(Project.id == module.project_id).first()
+
+    # Verify user owns this project
+    if project.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # Check if project has a repo
+    if not project.repo_name or not project.repo_url:
+        raise HTTPException(status_code=400, detail="Project does not have a connected repository")
+
+    # Get GitHub access token
+    if not current_user.github_access_token:
+        raise HTTPException(status_code=400, detail="GitHub access token not found")
+
+    # Extract owner and repo name from repo_url
+    # Format: https://github.com/owner/repo
+    parts = project.repo_url.rstrip('/').split('/')
+    owner = parts[-2]
+    repo_name = parts[-1]
+
+    try:
+        # Fetch recent commits
+        github = GitHubService(current_user.github_access_token)
+        commits = await github.get_recent_commits(owner, repo_name, since_days=30)
+
+        # Get files changed in recent commits
+        all_files = set()
+        for commit in commits[:10]:  # Check last 10 commits
+            files = await github.get_commit_files(owner, repo_name, commit["sha"])
+            all_files.update(files)
+
+        # Analyze progress using AI agent
+        analysis = check_task_progress(
+            task_description=task.description,
+            commits_data=commits,
+            files_changed=list(all_files)
+        )
+
+        # Auto-complete task if high confidence
+        if analysis.task_completed and analysis.confidence >= 0.7:
+            task.completed = True
+            db.commit()
+            db.refresh(task)
+
+        return {
+            "task_id": task_id,
+            "task_description": task.description,
+            "completed": task.completed,
+            "analysis": {
+                "suggested_completion": analysis.task_completed,
+                "confidence": analysis.confidence,
+                "reasoning": analysis.reasoning,
+                "relevant_commits": analysis.relevant_commits
+            },
+            "auto_marked_complete": analysis.task_completed and analysis.confidence >= 0.7
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to check progress: {str(e)}")
+
+
+@router.get("/tasks/{task_id}/help")
+async def get_task_help_endpoint(
+        task_id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    # Get the task
+    task = db.query(Task).filter(Task.id == task_id).first()
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    # Get the module and project
+    module = db.query(Module).filter(Module.id == task.module_id).first()
+    project = db.query(Project).filter(Project.id == module.project_id).first()
+
+    # Verify user owns this project
+    if project.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    try:
+        # Generate help using AI agent
+        help_data = get_task_help(
+            task_description=task.description,
+            project_title=project.title,
+            project_description=project.description
+        )
+
+        return {
+            "task_id": task_id,
+            "task_description": task.description,
+            "help": {
+                "overview": help_data.overview,
+                "steps": help_data.steps,
+                "code_examples": help_data.code_examples,
+                "resources": help_data.resources,
+                "tips": help_data.tips
+            }
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate help: {str(e)}")
