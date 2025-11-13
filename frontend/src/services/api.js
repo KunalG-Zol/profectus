@@ -98,3 +98,12 @@ export const completeTask = async (taskId) => {
   return response.data;
 };
 
+export const checkTaskProgress = async (taskId) => {
+  const response = await api.post(`/api/projects/tasks/${taskId}/check-progress`);
+  return response.data;
+};
+
+export const getTaskHelp = async (taskId) => {
+  const response = await api.get(`/api/projects/tasks/${taskId}/help`);
+  return response.data;
+};

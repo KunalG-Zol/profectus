@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { getProjectStatus, completeTask, generateRoadmap } from '../services/api';
+import { getProjectStatus, completeTask, generateRoadmap, checkTaskProgress, getTaskHelp } from '../services/api';
 import { useProjectContext } from '../context/ProjectContext';
 
 // SVG Icon Components
@@ -17,8 +17,157 @@ const RocketIcon = () => (
   </svg>
 );
 
+// Help Panel Component
+const HelpPanel = ({ helpData, onClose, loading }) => {
+  return (
+    <motion.div
+      initial={{ x: '100%' }}
+      animate={{ x: 0 }}
+      exit={{ x: '100%' }}
+      transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+      className="fixed right-0 top-0 h-full w-full md:w-[500px] lg:w-1/2 bg-white shadow-2xl z-50 overflow-y-auto"
+    >
+      <div className="sticky top-0 bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-6 shadow-lg">
+        <div className="flex justify-between items-center">
+          <h3 className="text-2xl font-bold font-josefin">Task Help</h3>
+          <button
+            onClick={onClose}
+            className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+          >
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        {helpData && (
+          <p className="mt-2 text-sm opacity-90 font-medium">{helpData.task_description}</p>
+        )}
+      </div>
+
+      <div className="p-6">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-indigo-600"></div>
+            <p className="mt-4 text-gray-600 font-medium">Getting help...</p>
+          </div>
+        ) : helpData ? (
+          <div className="space-y-6">
+            {/* Overview Section */}
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+              <h4 className="font-bold text-blue-900 mb-2 flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Overview
+              </h4>
+              <p className="text-gray-700 text-sm leading-relaxed">{helpData.help.overview}</p>
+            </div>
+
+            {/* Step-by-Step Guide */}
+            <div>
+              <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <svg className="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+                Step-by-Step Guide
+              </h4>
+              <ol className="space-y-3">
+                {helpData.help.steps.map((step, index) => (
+                  <li key={index} className="flex gap-3">
+                    <span className="flex-shrink-0 w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                      {index + 1}
+                    </span>
+                    <p className="text-gray-700 text-sm pt-0.5 leading-relaxed">{step}</p>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            {/* Code Examples */}
+            {helpData.help.code_examples && helpData.help.code_examples.length > 0 && (
+              <div>
+                <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                  </svg>
+                  Code Examples
+                </h4>
+                <div className="space-y-3">
+                  {helpData.help.code_examples.map((example, index) => (
+                    <div key={index} className="bg-gray-900 rounded-lg overflow-hidden">
+                      <div className="bg-gray-800 px-4 py-2 text-xs text-gray-400 font-mono">
+                        {example.language || 'code'}
+                      </div>
+                      <pre className="p-4 overflow-x-auto">
+                        <code className="text-sm text-green-400 font-mono">{example.code}</code>
+                      </pre>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Resources */}
+            {helpData.help.resources && helpData.help.resources.length > 0 && (
+              <div>
+                <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                  Helpful Resources
+                </h4>
+                <ul className="space-y-2">
+                  {helpData.help.resources.map((resource, index) => (
+                    <li key={index}>
+                      <a
+                        href={resource.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 text-sm hover:underline"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                        {resource.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Tips */}
+            {helpData.help.tips && helpData.help.tips.length > 0 && (
+              <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 rounded-r-lg">
+                <h4 className="font-bold text-yellow-900 mb-2 flex items-center gap-2">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  Pro Tips
+                </h4>
+                <ul className="space-y-1">
+                  {helpData.help.tips.map((tip, index) => (
+                    <li key={index} className="text-yellow-900 text-sm flex gap-2">
+                      <span>•</span>
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="text-center py-12 text-gray-500">
+            <p>No help data available</p>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
 // Recursive component to display modules and sub-modules
-const ModuleDisplay = ({ module, index, depth = 0, handleCompleteTask }) => {
+const ModuleDisplay = ({ module, index, depth = 0, handleCompleteTask, handleCheckProgress, handleGetHelp, checkingProgress, gettingHelp }) => {
   const isTopLevel = depth === 0;
   const leftOffset = isTopLevel ? 'pl-12' : `ml-${Math.min(depth * 8, 16)}`;
   const titleSize = isTopLevel ? 'text-2xl' : depth === 1 ? 'text-xl' : 'text-lg';
@@ -62,12 +211,12 @@ const ModuleDisplay = ({ module, index, depth = 0, handleCompleteTask }) => {
             {module.tasks.map((task) => (
               <motion.div
                 key={task.id}
-                className="flex items-center"
-                whileHover={{ scale: 1.02 }}
+                className="flex items-center gap-2"
+                whileHover={{ scale: 1.01 }}
               >
                 <label
                   htmlFor={`task-${task.id}`}
-                  className={`flex items-center w-full p-3 rounded-lg cursor-pointer transition-all duration-300 ${
+                  className={`flex items-center flex-1 p-3 rounded-lg cursor-pointer transition-all duration-300 ${
                     task.completed ? 'bg-gray-50 text-gray-500' : 'hover:bg-blue-50'
                   }`}
                 >
@@ -98,6 +247,48 @@ const ModuleDisplay = ({ module, index, depth = 0, handleCompleteTask }) => {
                     {task.description}
                   </span>
                 </label>
+
+                {/* Action Buttons */}
+                {!task.completed && (
+                  <div className="flex gap-2 flex-shrink-0">
+                    {/* Check Progress Button */}
+                    <motion.button
+                      onClick={() => handleCheckProgress(task.id)}
+                      disabled={checkingProgress[task.id]}
+                      className="px-3 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      title="Check progress from GitHub commits"
+                    >
+                      {checkingProgress[task.id] ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                        </span>
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      )}
+                    </motion.button>
+
+                    {/* Help Button */}
+                    <motion.button
+                      onClick={() => handleGetHelp(task.id, task.description)}
+                      disabled={gettingHelp}
+                      className="px-3 py-2 text-sm font-medium text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      title="Get help with this task"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </motion.button>
+                  </div>
+                )}
               </motion.div>
             ))}
           </div>
@@ -113,6 +304,10 @@ const ModuleDisplay = ({ module, index, depth = 0, handleCompleteTask }) => {
                 index={subIndex}
                 depth={depth + 1}
                 handleCompleteTask={handleCompleteTask}
+                handleCheckProgress={handleCheckProgress}
+                handleGetHelp={handleGetHelp}
+                checkingProgress={checkingProgress}
+                gettingHelp={gettingHelp}
               />
             ))}
           </div>
@@ -127,6 +322,11 @@ const Roadmap = () => {
   const { setError } = useProjectContext();
   const [projectStatus, setProjectStatus] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [checkingProgress, setCheckingProgress] = useState({});
+  const [progressResults, setProgressResults] = useState({});
+  const [showHelp, setShowHelp] = useState(false);
+  const [helpData, setHelpData] = useState(null);
+  const [gettingHelp, setGettingHelp] = useState(false);
 
   useEffect(() => {
     const fetchProjectStatus = async () => {
@@ -169,6 +369,55 @@ const Roadmap = () => {
     }
   };
 
+  const handleCheckProgress = async (taskId) => {
+    setCheckingProgress(prev => ({ ...prev, [taskId]: true }));
+
+    try {
+      const result = await checkTaskProgress(taskId);
+      setProgressResults(prev => ({ ...prev, [taskId]: result }));
+
+      if (result.auto_marked_complete) {
+        const updatedStatus = await getProjectStatus(projectId);
+        setProjectStatus(updatedStatus);
+      }
+
+      alert(
+        `Progress Check Results:\n\n` +
+        `Confidence: ${(result.analysis.confidence * 100).toFixed(0)}%\n` +
+        `Status: ${result.analysis.suggested_completion ? 'Likely Complete ✓' : 'Not Complete ✗'}\n\n` +
+        `Reasoning: ${result.analysis.reasoning}\n\n` +
+        `Recent Commits:\n${result.analysis.relevant_commits.slice(0, 3).join('\n')}\n\n` +
+        (result.auto_marked_complete ? '✅ Task automatically marked as complete!' : '⚠️ Task not auto-completed (confidence too low)')
+      );
+    } catch (error) {
+      alert('Failed to check progress: ' + error.message);
+    } finally {
+      setCheckingProgress(prev => ({ ...prev, [taskId]: false }));
+    }
+  };
+
+  const handleGetHelp = async (taskId, taskDescription) => {
+    setGettingHelp(true);
+    setShowHelp(true);
+    setHelpData(null);
+
+    try {
+      const result = await getTaskHelp(taskId);
+      setHelpData(result);
+    } catch (error) {
+      setError(error.message);
+      alert('Failed to get help: ' + error.message);
+      setShowHelp(false);
+    } finally {
+      setGettingHelp(false);
+    }
+  };
+
+  const handleCloseHelp = () => {
+    setShowHelp(false);
+    setHelpData(null);
+  };
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)]">
@@ -208,37 +457,69 @@ const Roadmap = () => {
     );
   }
 
-  // Filter to only show top-level modules (those without a parent)
   const topLevelModules = projectStatus.modules.filter(m => !m.parent_module_id);
 
   return (
-    <div className="max-w-5xl mx-auto mt-10 mb-10 p-8">
-      <h2 className="text-4xl font-bold mb-2 font-josefin text-blue-900">{projectStatus.title}</h2>
-      <p className="mb-10 text-lg text-gray-600">
-        Project Status: <span className={`font-semibold ${projectStatus.completed ? 'text-green-600' : 'text-amber-600'}`}>
-          {projectStatus.completed ? 'Completed' : 'In Progress'}
-        </span>
-      </p>
+    <>
+      <div className="flex justify-center">
+        <motion.div
+          className="max-w-5xl mx-auto mt-10 mb-10 p-8 transition-all duration-300 flex-grow w-full"
+        >
+          <h2 className="text-4xl font-bold mb-2 font-josefin text-blue-900">{projectStatus.title}</h2>
+          <p className="mb-10 text-lg text-gray-600">
+            Project Status: <span className={`font-semibold ${projectStatus.completed ? 'text-green-600' : 'text-amber-600'}`}>
+              {projectStatus.completed ? 'Completed' : 'In Progress'}
+            </span>
+          </p>
 
-      <div className="relative">
-        {/* Vertical Timeline Bar */}
-        <div className="absolute left-5 top-2 bottom-2 w-1 bg-gray-200 rounded-full"></div>
+          <div className="relative">
+            <div className="absolute left-5 top-2 bottom-2 w-1 bg-gray-200 rounded-full"></div>
 
-        {topLevelModules.map((module, index) => (
-          <ModuleDisplay
-            key={module.id}
-            module={module}
-            index={index}
-            depth={0}
-            handleCompleteTask={handleCompleteTask}
-          />
-        ))}
+            {topLevelModules.map((module, index) => (
+              <ModuleDisplay
+                key={module.id}
+                module={module}
+                index={index}
+                depth={0}
+                handleCompleteTask={handleCompleteTask}
+                handleCheckProgress={handleCheckProgress}
+                handleGetHelp={handleGetHelp}
+                checkingProgress={checkingProgress}
+                gettingHelp={gettingHelp}
+              />
+            ))}
+          </div>
+
+          <Link to="/" className="mt-12 inline-block bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-transform duration-300 hover:scale-105">
+            Create New Project
+          </Link>
+        </motion.div>
+
+        {/* Help Panel */}
+        <AnimatePresence>
+          {showHelp && (
+            <HelpPanel
+              helpData={helpData}
+              onClose={handleCloseHelp}
+              loading={gettingHelp}
+            />
+          )}
+        </AnimatePresence>
       </div>
 
-      <Link to="/" className="mt-12 inline-block bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-transform duration-300 hover:scale-105">
-        Create New Project
-      </Link>
-    </div>
+      {/* Overlay */}
+      <AnimatePresence>
+        {showHelp && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={handleCloseHelp}
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

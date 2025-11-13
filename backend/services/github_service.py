@@ -1,6 +1,7 @@
 import httpx
 from fastapi import HTTPException
 from typing import List, Dict, Any
+from datetime import datetime, timedelta
 
 
 class GitHubService:
@@ -55,7 +56,7 @@ class GitHubService:
             return response.json()
 
     async def create_file(self, owner: str, repo: str, path: str, content: str, message: str, branch: str = "main") -> \
-    Dict[str, Any]:
+            Dict[str, Any]:
         """Create or update a file in a repository"""
         import base64
         encoded_content = base64.b64encode(content.encode()).decode()
@@ -90,3 +91,49 @@ class GitHubService:
             if response.status_code != 201:
                 raise HTTPException(status_code=response.status_code, detail="Failed to create issue")
             return response.json()
+
+    async def get_recent_commits(self, owner: str, repo: str, since_days: int = 7, per_page: int = 30) -> List[
+        Dict[str, Any]]:
+        """Get recent commits from a repository"""
+        since_date = (datetime.now() - timedelta(days=since_days)).isoformat()
+
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.BASE_URL}/repos/{owner}/{repo}/commits",
+                headers=self.headers,
+                params={
+                    "since": since_date,
+                    "per_page": per_page
+                }
+            )
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail="Failed to fetch commits")
+
+            commits = response.json()
+
+            # Format commits for easier processing
+            formatted_commits = []
+            for commit in commits:
+                formatted_commits.append({
+                    "sha": commit["sha"],
+                    "message": commit["commit"]["message"],
+                    "author": commit["commit"]["author"]["name"],
+                    "date": commit["commit"]["author"]["date"],
+                    "url": commit["html_url"]
+                })
+
+            return formatted_commits
+
+    async def get_commit_files(self, owner: str, repo: str, sha: str) -> List[str]:
+        """Get files changed in a specific commit"""
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.BASE_URL}/repos/{owner}/{repo}/commits/{sha}",
+                headers=self.headers
+            )
+            if response.status_code != 200:
+                raise HTTPException(status_code=response.status_code, detail="Failed to fetch commit details")
+
+            commit_data = response.json()
+            files = [file["filename"] for file in commit_data.get("files", [])]
+            return files
