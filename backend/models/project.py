@@ -36,6 +36,7 @@ class Module(Base):
     __tablename__ = "module"
     id = Column(Integer, primary_key=True, unique=True, index=True)
     name = Column(String, index=True)
+    description = Column(String, default="")
     project_id = Column(Integer, ForeignKey("project.id"), index=True)
     project = relationship("Project", back_populates="modules")
     completed = Column(Boolean, default=False, index=True)

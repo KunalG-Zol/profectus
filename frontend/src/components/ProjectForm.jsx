@@ -8,6 +8,7 @@ const ProjectForm = () => {
   const [repoName, setRepoName] = useState('');
   const [repoDesc, setRepoDesc] = useState('');
   const [repoPrivate, setRepoPrivate] = useState(false);
+  const [level, setLevel] = useState('beginner'); // NEW: Project level state
 
   const [loading, setLoading] = useState(false);
   const [ideaLoading, setIdeaLoading] = useState(false);
@@ -39,10 +40,10 @@ const ProjectForm = () => {
   const handleGenerateIdea = async () => {
     try {
       setIdeaLoading(true);
-      const idea = await generateProjectIdea();
+      const idea = await generateProjectIdea(level); // Pass level to API
       setTitle(idea.title);
       setDescription(idea.description);
-      setRepoName(idea.title.replace(/\s+/g, '-').toLowerCase()); // Suggest repo name
+      setRepoName(idea.title.replace(/\s+/g, '-').toLowerCase());
     } catch (error) {
       alert('Error generating project idea: ' + error.message);
     } finally {
@@ -57,9 +58,10 @@ const ProjectForm = () => {
           <h1 className="text-4xl md:text-5xl font-k95 text-white-smoke mb-2">Let's Get Started</h1>
           <p className="text-lg text-white-smoke/80">Tell us about your new project idea.</p>
         </div>
+
         <div className="bg-[#01080e]/60 p-8 rounded-2xl shadow-2xl border border-orange-500/20 backdrop-blur-sm">
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Project Fields */}
+            {/* Project Title */}
             <div>
               <label className="block text-sm font-bold mb-2 tracking-wider" htmlFor="title">
                 Project Title
@@ -74,6 +76,8 @@ const ProjectForm = () => {
                 required
               />
             </div>
+
+            {/* Project Description */}
             <div>
               <label className="block text-sm font-bold mb-2 tracking-wider" htmlFor="description">
                 Project Description
@@ -87,9 +91,31 @@ const ProjectForm = () => {
                 required
               />
             </div>
+
+            {/* Project Level Dropdown - NEW */}
+            <div>
+              <label className="block text-sm font-bold mb-2 tracking-wider" htmlFor="level">
+                Project Level
+              </label>
+              <select
+                id="level"
+                value={level}
+                onChange={(e) => setLevel(e.target.value)}
+                className="w-full px-4 py-3 bg-rich-black/50 border-2 border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+              >
+                <option value="beginner">Beginner</option>
+                <option value="intermediate">Intermediate</option>
+                <option value="advanced">Advanced</option>
+              </select>
+              <p className="text-sm text-white-smoke/60 mt-1">
+                Select the complexity level for AI-generated project ideas
+              </p>
+            </div>
+
             {/* Repository Fields */}
             <div className="mt-8">
               <h2 className="text-lg font-bold mb-4">GitHub Repository Details</h2>
+
               <label className="block text-sm font-bold mb-2" htmlFor="repoName">
                 Repository Name
               </label>
@@ -99,9 +125,10 @@ const ProjectForm = () => {
                 value={repoName}
                 onChange={(e) => setRepoName(e.target.value)}
                 placeholder="my-new-ai-project"
-                className="w-full px-4 py-3 bg-rich-black/50 border-2 border-gray-700 rounded-lg"
+                className="w-full px-4 py-3 bg-rich-black/50 border-2 border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
                 required
               />
+
               <label className="block text-sm font-bold mb-2 mt-4" htmlFor="repoDesc">
                 Repository Description
               </label>
@@ -111,25 +138,28 @@ const ProjectForm = () => {
                 value={repoDesc}
                 onChange={(e) => setRepoDesc(e.target.value)}
                 placeholder="Short description"
-                className="w-full px-4 py-3 bg-rich-black/50 border-2 border-gray-700 rounded-lg"
+                className="w-full px-4 py-3 bg-rich-black/50 border-2 border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
               />
+
               <div className="flex items-center mt-4">
                 <input
                   type="checkbox"
                   id="repoPrivate"
                   checked={repoPrivate}
                   onChange={() => setRepoPrivate(!repoPrivate)}
+                  className="w-4 h-4 text-orange-500 bg-rich-black/50 border-gray-700 rounded focus:ring-orange-500"
                 />
                 <label htmlFor="repoPrivate" className="ml-2 text-sm font-bold">
                   Private Repository
                 </label>
               </div>
             </div>
-            {/* Buttons */}
+
+            {/* Action Buttons */}
             <div className="flex items-center space-x-4">
               <button
                 type="submit"
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white-smoke font-bold py-4 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed"
+                className="w-full bg-orange-500 hover:bg-orange-600 text-white-smoke font-bold py-4 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
                 disabled={loading}
               >
                 {loading ? (
@@ -142,10 +172,11 @@ const ProjectForm = () => {
                   </div>
                 ) : 'Create & Generate Questions'}
               </button>
+
               <button
                 type="button"
                 onClick={handleGenerateIdea}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white-smoke font-bold py-4 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed"
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white-smoke font-bold py-4 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg disabled:bg-gray-600 disabled:cursor-not-allowed disabled:transform-none"
                 disabled={ideaLoading}
               >
                 {ideaLoading ? (

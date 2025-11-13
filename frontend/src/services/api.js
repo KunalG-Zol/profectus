@@ -83,8 +83,8 @@ export const generateRoadmap = async (projectId) => {
   return response.data;
 };
 
-export const generateProjectIdea = async () => {
-  const response = await api.post('/api/projects/generate-idea');
+export const generateProjectIdea = async (level = "beginner") => {
+  const response = await api.post('/api/projects/generate-idea', { level });
   return response.data;
 };
 
@@ -97,3 +97,4 @@ export const completeTask = async (taskId) => {
   const response = await api.put(`/api/projects/tasks/${taskId}/complete`);
   return response.data;
 };
+

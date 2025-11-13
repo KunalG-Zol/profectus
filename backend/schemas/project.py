@@ -40,6 +40,7 @@ class ModuleCreate(BaseModel):
 class ModuleResponse(BaseModel):
     id: int
     name: str
+    description: str
     project_id: int
     completed: bool = False
 
@@ -74,3 +75,6 @@ class ProjectStatusResponse(BaseModel):
     title: str
     completed: bool
     modules: List[ModuleStatus]
+
+class ProjectIdeaRequest(BaseModel):
+    level: str = "beginner"

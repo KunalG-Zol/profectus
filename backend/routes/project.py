@@ -18,14 +18,14 @@ from ..services.github_service import GitHubService
 
 # Import the service to update completion status
 from ..services.completion_tracker import mark_completed
-
+from fastapi import Body
+from ..schemas.project import ProjectIdeaRequest
 router = APIRouter(prefix="/api/projects", tags=["projects"])
 
 
 @router.post("/generate-idea", response_model=ProjectIdea)
-def get_project_idea():
-    return generate_project_idea()
-
+def get_project_idea(request: ProjectIdeaRequest):
+    return generate_project_idea(level=request.level)
 
 @router.post("/", response_model=ProjectResponse)
 async def create_project(
@@ -207,17 +207,18 @@ def generate_project_roadmap(project_id: int, db: Session = Depends(get_db)):
     roadmap_data = generate_roadmap(project.description, qa_pairs)
 
     # Save the roadmap to the database
-    for module_name, tasks in roadmap_data.modules.items():
-        # Create and save the module
-        module = Module(name=module_name, project_id=project_id)
-        db.add(module)
+    for module in roadmap_data:  # roadmap_data assumed to be list of modules with name, description, tasks
+        db_module = Module(
+            name=module.name,
+            description=module.description,
+            project_id=project_id
+        )
+        db.add(db_module)
         db.commit()
-        db.refresh(module)
-
-        # Create and save the tasks for the module
-        for task_desc in tasks:
-            task = Task(description=task_desc, module_id=module.id)
-            db.add(task)
+        db.refresh(db_module)
+        for task_desc in module.tasks:
+            db_task = Task(description=task_desc, module_id=db_module.id)
+            db.add(db_task)
         db.commit()
 
     # Return the updated project status
