@@ -12,11 +12,115 @@ const CheckIcon = ({ className }) => (
 );
 
 const RocketIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2.343a1 1 0 0 1 .993.883l.007.117v3.34a1 1 0 0 1-2 0V3.343a1 1 0 0 1 1-1zm0 14.314a1 1 0 0 1 .993.883l.007.117v3.34a1 1 0 0 1-2 0v-3.34a1 1 0 0 1 1-1zm-7.414-5.414a1 1 0 0 1 .093 1.408l-.093.099-2.36 2.36a1 1 0 0 1-1.497-1.32l.093-.099 2.36-2.36a1 1 0 0 1 1.404-.086zm14.828 0a1 1 0 0 1 1.497 1.32l-.093.099-2.36 2.36a1 1 0 0 1-1.32 0l-2.36-2.36a1 1 0 0 1 0-1.414l2.36-2.36a1 1 0 0 1 1.32 0l2.36 2.36a1 1 0 0 1 0 1.414zM4.586 6.001a1 1 0 0 1 1.32 0l2.36 2.36a1 1 0 0 1 0 1.414l-2.36 2.36a1 1 0 0 1-1.414 0l-2.36-2.36a1 1 0 0 1 0-1.414l2.36-2.36a1 1 0 0 1 .093-.086zm14.828 0a1 1 0 0 1 1.414 0l2.36 2.36a1 1 0 0 1 0 1.414l-2.36 2.36a1 1 0 0 1-1.414 0l-2.36-2.36a1 1 0 0 1 0-1.414l2.36-2.36zM12 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"/>
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2.343a1 1 0 0 1 .993.883l.007.117v3.34a1 1 0 0 1-2 0V3.343a1 1 0 0 1 1-1zm0 14.314a1 1 0 0 1 .993.883l.007.117v3.34a1 1 0 0 1-2 0v-3.34a1 1 0 0 1 1-1zm-7.414-5.414a1 1 0 0 1 .093 1.408l-.093.099-2.36 2.36a1 1 0 0 1-1.497-1.32l.093-.099 2.36-2.36a1 1 0 0 1 1.404-.086zm14.828 0a1 1 0 0 1 1.497 1.32l-.093.099-2.36 2.36a1 1 0 0 1-1.32 0l-2.36-2.36a1 1 0 0 1 0-1.414l2.36-2.36a1 1 0 0 1 1.32 0l2.36 2.36a1 1 0 0 1 0 1.414zM4.586 6.001a1 1 0 0 1 1.32 0l2.36 2.36a1 1 0 0 1 0 1.414l-2.36 2.36a1 1 0 0 1-1.414 0l-2.36-2.36a1 1 0 0 1 0-1.414l2.36-2.36a1 1 0 0 1 .093-.086zm14.828 0a1 1 0 0 1 1.414 0l2.36 2.36a1 1 0 0 1 0 1.414l-2.36 2.36a1 1 0 0 1-1.414 0l-2.36-2.36a1 1 0 0 1 0-1.414l2.36-2.36zM12 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12z"/>
+  </svg>
 );
 
+// Recursive component to display modules and sub-modules
+const ModuleDisplay = ({ module, index, depth = 0, handleCompleteTask }) => {
+  const isTopLevel = depth === 0;
+  const leftOffset = isTopLevel ? 'pl-12' : `ml-${Math.min(depth * 8, 16)}`;
+  const titleSize = isTopLevel ? 'text-2xl' : depth === 1 ? 'text-xl' : 'text-lg';
+  const borderColor = isTopLevel ? 'border-blue-500' : depth === 1 ? 'border-purple-500' : 'border-indigo-400';
+  const numberBg = isTopLevel ? 'bg-white' : 'bg-gray-50';
+
+  return (
+    <motion.div
+      key={module.id}
+      className={`relative ${leftOffset} mb-${isTopLevel ? 8 : 6}`}
+      initial={{ opacity: 0, x: -50 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
+    >
+      {isTopLevel && (
+        <div className={`absolute left-0 top-1.5 flex items-center justify-center w-10 h-10 ${numberBg} border-4 ${borderColor} rounded-full z-10`}>
+          <span className={`font-bold ${isTopLevel ? 'text-blue-500' : 'text-purple-500'}`}>
+            {index + 1}
+          </span>
+        </div>
+      )}
+
+      <div className={`bg-white p-6 rounded-xl shadow-md border ${isTopLevel ? 'border-gray-200' : 'border-gray-100'}`}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className={`${titleSize} font-semibold font-josefin text-gray-800`}>
+            {!isTopLevel && <span className="text-gray-400 mr-2">↳</span>}
+            {module.name}
+          </h3>
+          <span className={`px-3 py-1 text-sm font-semibold rounded-full ${module.completed ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+            {module.completed ? 'Completed' : 'In Progress'}
+          </span>
+        </div>
+
+        {module.description && (
+          <p className="text-gray-600 mb-4 text-sm">{module.description}</p>
+        )}
+
+        {/* Tasks */}
+        {module.tasks && module.tasks.length > 0 && (
+          <div className="space-y-3 mb-4">
+            {module.tasks.map((task) => (
+              <motion.div
+                key={task.id}
+                className="flex items-center"
+                whileHover={{ scale: 1.02 }}
+              >
+                <label
+                  htmlFor={`task-${task.id}`}
+                  className={`flex items-center w-full p-3 rounded-lg cursor-pointer transition-all duration-300 ${
+                    task.completed ? 'bg-gray-50 text-gray-500' : 'hover:bg-blue-50'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    id={`task-${task.id}`}
+                    checked={task.completed}
+                    onChange={() => !task.completed && handleCompleteTask(task.id)}
+                    disabled={task.completed}
+                    className="hidden"
+                  />
+                  <div className={`w-6 h-6 mr-4 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all duration-300 ${
+                    task.completed ? 'bg-blue-500 border-blue-500' : 'border-gray-400'
+                  }`}>
+                    <AnimatePresence>
+                      {task.completed && (
+                        <motion.div
+                          initial={{ scale: 0, rotate: -90 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          exit={{ scale: 0, rotate: 90 }}
+                        >
+                          <CheckIcon className="w-4 h-4 text-white" />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                  <span className={task.completed ? 'line-through' : ''}>
+                    {task.description}
+                  </span>
+                </label>
+              </motion.div>
+            ))}
+          </div>
+        )}
+
+        {/* Sub-modules - Recursive rendering */}
+        {module.sub_modules && module.sub_modules.length > 0 && (
+          <div className={`mt-4 space-y-4 ${depth === 0 ? 'border-l-2 border-purple-200 pl-4' : ''}`}>
+            {module.sub_modules.map((subModule, subIndex) => (
+              <ModuleDisplay
+                key={subModule.id}
+                module={subModule}
+                index={subIndex}
+                depth={depth + 1}
+                handleCompleteTask={handleCompleteTask}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
+};
 
 const Roadmap = () => {
   const { projectId } = useParams();
@@ -104,6 +208,9 @@ const Roadmap = () => {
     );
   }
 
+  // Filter to only show top-level modules (those without a parent)
+  const topLevelModules = projectStatus.modules.filter(m => !m.parent_module_id);
+
   return (
     <div className="max-w-5xl mx-auto mt-10 mb-10 p-8">
       <h2 className="text-4xl font-bold mb-2 font-josefin text-blue-900">{projectStatus.title}</h2>
@@ -117,72 +224,14 @@ const Roadmap = () => {
         {/* Vertical Timeline Bar */}
         <div className="absolute left-5 top-2 bottom-2 w-1 bg-gray-200 rounded-full"></div>
 
-        {projectStatus.modules.map((module, index) => (
-          <motion.div
+        {topLevelModules.map((module, index) => (
+          <ModuleDisplay
             key={module.id}
-            className="relative pl-12 mb-8"
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-          >
-            <div className="absolute left-0 top-1.5 flex items-center justify-center w-10 h-10 bg-white border-4 border-blue-500 rounded-full">
-              <span className="font-bold text-blue-500">{index + 1}</span>
-            </div>
-            <div className="bg-white p-6 rounded-xl shadow-md border border-gray-200">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-2xl font-semibold font-josefin text-gray-800">
-                  {module.name}
-                </h3>
-                <span className={`px-3 py-1 text-sm font-semibold rounded-full ${module.completed ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
-                  {module.completed ? 'Completed' : 'In Progress'}
-                </span>
-              </div>
-
-              <div className="space-y-3">
-                {module.tasks.map((task) => (
-                  <motion.div
-                    key={task.id}
-                    className="flex items-center"
-                    whileHover={{ scale: 1.02 }}
-                  >
-                    <label
-                      htmlFor={`task-${task.id}`}
-                      className={`flex items-center w-full p-3 rounded-lg cursor-pointer transition-all duration-300 ${
-                        task.completed ? 'bg-gray-50 text-gray-500' : 'hover:bg-blue-50'
-                      }`}
-                    >
-                      <input
-                        type="checkbox"
-                        id={`task-${task.id}`}
-                        checked={task.completed}
-                        onChange={() => !task.completed && handleCompleteTask(task.id)}
-                        disabled={task.completed}
-                        className="hidden"
-                      />
-                      <div className={`w-6 h-6 mr-4 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all duration-300 ${
-                        task.completed ? 'bg-blue-500 border-blue-500' : 'border-gray-400'
-                      }`}>
-                        <AnimatePresence>
-                          {task.completed && (
-                            <motion.div
-                              initial={{ scale: 0, rotate: -90 }}
-                              animate={{ scale: 1, rotate: 0 }}
-                              exit={{ scale: 0, rotate: 90 }}
-                            >
-                              <CheckIcon className="w-4 h-4 text-white" />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                      <span className={task.completed ? 'line-through' : ''}>
-                        {task.description}
-                      </span>
-                    </label>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </motion.div>
+            module={module}
+            index={index}
+            depth={0}
+            handleCompleteTask={handleCompleteTask}
+          />
         ))}
       </div>
 

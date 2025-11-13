@@ -32,14 +32,21 @@ class Answer(Base):
     selected_choice = Column(String)
     question = relationship("Question", back_populates="answers")
 
+
 class Module(Base):
     __tablename__ = "module"
     id = Column(Integer, primary_key=True, unique=True, index=True)
     name = Column(String, index=True)
+    description = Column(String, default="")
     project_id = Column(Integer, ForeignKey("project.id"), index=True)
+    parent_module_id = Column(Integer, ForeignKey("module.id"), nullable=True, index=True)  # NEW
+
     project = relationship("Project", back_populates="modules")
     completed = Column(Boolean, default=False, index=True)
     tasks = relationship("Task", back_populates="module")
+
+    parent_module = relationship("Module", remote_side=[id], backref="sub_modules")  # NEW
+
 
 class Task(Base):
     __tablename__ = "task"

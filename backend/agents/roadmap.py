@@ -1,36 +1,50 @@
+from typing import Dict, List, Any
+from pydantic import BaseModel, Field
 import dspy
 import os
-from typing import Dict, List
-from pydantic import BaseModel, Field
 
-class Roadmap(BaseModel):
-    """Project roadmap with modules and steps"""
-    modules: Dict[str, List[str]] = Field(
-        description="Dictionary with module names as keys and lists of steps as values."
-    )
 
-class GenerateRoadmapSignature(dspy.Signature):
-    """Generate a detailed project roadmap based on a project description and clarifying questions and answers."""
-    project_description: str = dspy.InputField(desc="A detailed description of the project.")
-    qa_pairs: str = dspy.InputField(desc="Formatted string of clarifying questions and their answers.")
-    # Directly use the Pydantic model as the output type
-    roadmap: Roadmap = dspy.OutputField(desc="The generated roadmap, structured as a dictionary of modules and steps.")
+class SubModule(BaseModel):
+    name: str = Field(description="The name of the sub-module.")
+    description: str = Field(description="A detailed description for the sub-module.")
+    tasks: List[str] = Field(description="A list of actionable subtasks for this sub-module.")
+
+class RoadmapModule(BaseModel):
+    name: str = Field(description="The name of the module or major step.")
+    description: str = Field(description="A detailed description for the module.")
+    sub_modules: List[SubModule] = Field(default=[], description="Optional list of sub-modules.")  # NEW
+    tasks: List[str] = Field(description="A list of actionable subtasks for this module.")
+
+
+
+class RoadmapSignature(dspy.Signature):
+    description: str = dspy.InputField(desc="Description of the project.")
+    modules: List[Dict[str, Any]] = dspy.OutputField(
+        desc="List of modules. Each module has a name, a description, and a list of subtasks ('tasks').")
+
 
 class RoadmapAgent(dspy.Module):
     def __init__(self):
         super().__init__()
-        self.generate_roadmap = dspy.Predict(GenerateRoadmapSignature)
+        self.generate_roadmap = dspy.Predict(RoadmapSignature)
 
-    def forward(self, project_description: str, qa_pairs: str) -> Roadmap:
-        prediction = self.generate_roadmap(project_description=project_description, qa_pairs=qa_pairs)
-        # DSPy should return an object where 'roadmap' is already a Roadmap instance
-        return prediction.roadmap
+    def forward(self, description: str) -> List[RoadmapModule]:
+        prediction = self.generate_roadmap(description=description)
+        # If coming as dict, validate/parse into Pydantic objects:
+        all_modules = []
+        for mod in prediction.modules:
+            all_modules.append(RoadmapModule(**mod))
+        return all_modules
 
-# Global LLM configuration (as it was before)
+
 llm = dspy.LM("gemini/gemini-2.5-pro", api_key=os.environ.get("GEMINI_API_KEY"))
 dspy.settings.configure(lm=llm)
 
-def generate_roadmap(project_description: str, question_answer_pairs: Dict[str, str]) -> Roadmap:
-    qa_formatted = "\n".join([f"Question: {q}\nAnswer: {a}" for q, a in question_answer_pairs.items()])
-    roadmap_agent = RoadmapAgent()
-    return roadmap_agent.forward(project_description, qa_formatted)
+
+def generate_roadmap(description: str, qa_pairs: dict = None):
+    """
+    Generates a roadmap with multiple modules, each with a name, a detailed description,
+    and a list of actionable subtasks/tasks.
+    """
+    agent = RoadmapAgent()
+    return agent.forward(description=description)
