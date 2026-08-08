@@ -21,8 +21,7 @@ class ProjectResponse(BaseModel):
     repo_name: Optional[str] = None
     repo_url: Optional[str] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 
@@ -45,8 +44,7 @@ class ModuleResponse(BaseModel):
     project_id: int
     completed: bool = False
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class TaskCreate(BaseModel):
     description: str
@@ -57,8 +55,7 @@ class TaskResponse(BaseModel):
     module_id: int
     completed: bool = False
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class TaskStatus(BaseModel):
     id: int
