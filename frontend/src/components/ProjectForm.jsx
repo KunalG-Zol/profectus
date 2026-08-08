@@ -43,7 +43,12 @@ const ProjectForm = () => {
       const idea = await generateProjectIdea(level); // Pass level to API
       setTitle(idea.title);
       setDescription(idea.description);
-      setRepoName(idea.title.replace(/\s+/g, '-').toLowerCase());
+      const repoSlug = idea.title
+        .toLowerCase()
+        .replace(/[^a-z0-9._-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '');
+      setRepoName(repoSlug);
     } catch (error) {
       alert('Error generating project idea: ' + error.message);
     } finally {
