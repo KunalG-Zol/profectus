@@ -40,20 +40,12 @@ const Navbar = ({ isLandingPage }) => {
               </button>
             </>
           ) : (
-            <>
-              <Link
-                to="/login"
-                className="font-josefin text-white-smoke hover:text-orange-500 transition-colors"
-              >
-                Login
-              </Link>
-              <Link
-                to="/signup"
-                className="bg-orange-500 hover:bg-orange-600 text-white-smoke font-josefin font-bold py-2 px-6 rounded-lg transition-all"
-              >
-                Sign Up
-              </Link>
-            </>
+            <Link
+              to="/login"
+              className="bg-orange-500 hover:bg-orange-600 text-white-smoke font-josefin font-bold py-2 px-6 rounded-lg transition-all"
+            >
+              Sign In
+            </Link>
           )}
         </div>
       </div>

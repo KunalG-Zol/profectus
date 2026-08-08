@@ -9,7 +9,6 @@ import { ProjectProvider } from './context/ProjectContext.jsx'
 import { AuthProvider, useAuth } from './context/AuthContext.jsx'
 import ProjectForm from "./components/ProjectForm.jsx";
 import LoginPage from "./components/LoginPage.jsx";
-import SignupPage from "./components/SignupPage.jsx";
 import ProjectsPage from "./components/ProjectsPage.jsx";
 import ProfilePage from "./components/ProfilePage.jsx";
 
@@ -103,18 +102,11 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Public auth routes */}
+            {/* Public auth route - GitHub OAuth handles both login and signup */}
             <Route path="/login" element={
               <>
                 <Navbar isLandingPage={true} />
                 <LoginPage />
-              </>
-            } />
-
-            <Route path="/signup" element={
-              <>
-                <Navbar isLandingPage={true} />
-                <SignupPage />
               </>
             } />
           </Routes>

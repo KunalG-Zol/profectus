@@ -87,10 +87,10 @@ const LoginPage = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="font-k95 text-3xl md:text-4xl text-white-smoke mb-3">
-            Welcome Back
+            Welcome to Profectus
           </h1>
           <p className="font-josefin text-white-smoke/80 text-base md:text-lg">
-            Sign in to continue your journey
+            Sign in or create an account with GitHub to continue
           </p>
         </div>
 
