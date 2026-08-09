@@ -2,22 +2,83 @@
 @font-face {
     font-family: "K95";
     src: url("./assets/fonts/K95Alphabet.ttf");
+    font-display: swap;
  }
 
 @font-face {
     font-family: "Josefin Sans";
     src: url("./assets/fonts/JosefinSans-VariableFont_wght.ttf");
+    font-display: swap;
 }
 
 
 @theme {
     --font-k95: K95, sans-serif;
-    --color-rich-black: #02111b;
-    --color-white-smoke: #f5f5f5;
     --font-josefin: 'Josefin Sans', sans-serif;
+
+    /* Page background: soft deep navy instead of near-black, so contrast against
+       text/accents reads as rich rather than stark. */
+    --color-rich-black: #0b1a26;
+    /* Card/surface color: intentionally lighter than the page background so
+       elevated surfaces read clearly without needing a loud border. */
+    --color-ink: #142330;
+    --color-white-smoke: #ebe8e4;
+
+    /* Muted terracotta accent — same hue family as the old Tailwind orange,
+       roughly half the saturation, so it reads as a considered accent color
+       rather than a vivid alert/warning orange when it's used this often. */
+    --color-orange-50: #fbf1ea;
+    --color-orange-100: #f6dfcd;
+    --color-orange-200: #eabb95;
+    --color-orange-300: #dd9a68;
+    --color-orange-400: #cd7f4c;
+    --color-orange-500: #bb6a3c;
+    --color-orange-600: #a25730;
+    --color-orange-700: #854528;
+    --color-orange-800: #6b3720;
+    --color-orange-900: #572d1b;
+    --color-orange-950: #2f1710;
 }
 
-body{
-    background: #02111b;
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: var(--color-rich-black);
+    font-family: var(--font-josefin);
+    color: var(--color-white-smoke);
+}
+
+.app-shell {
+    background: linear-gradient(to bottom, var(--color-rich-black), #0f2032);
+}
+
+::selection {
+    background: color-mix(in srgb, var(--color-orange-500) 40%, transparent);
+    color: var(--color-white-smoke);
+}
+
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-rich-black);
+}
+
+::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--color-orange-500) 30%, transparent);
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--color-orange-500) 55%, transparent);
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-orange-500);
+    outline-offset: 2px;
 }
 

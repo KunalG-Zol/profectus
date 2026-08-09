@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { AlertTriangle, CheckCircle2, FolderKanban, Plus } from 'lucide-react';
 import { getProjects } from '../services/api';
-import { motion } from 'framer-motion';
+import Card from './ui/Card';
+import { button } from '../lib/styles';
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState([]);
@@ -27,7 +29,7 @@ const ProjectsPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-rich-black to-[#071a2a]">
+      <div className="flex items-center justify-center min-h-[calc(100vh-73px)] app-shell">
         <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-orange-500"></div>
       </div>
     );
@@ -35,11 +37,12 @@ const ProjectsPage = () => {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-rich-black to-[#071a2a] text-white-smoke text-center">
+      <div className="flex items-center justify-center min-h-[calc(100vh-73px)] app-shell text-white-smoke text-center px-4">
         <div>
-          <h2 className="text-3xl font-bold mb-4">Error</h2>
-          <p>{error}</p>
-          <Link to="/" className="mt-6 inline-block bg-orange-500 text-white font-bold py-3 px-6 rounded-lg hover:bg-orange-600 transition-transform duration-300 hover:scale-105">
+          <AlertTriangle className="w-12 h-12 text-orange-500 mx-auto mb-4" strokeWidth={1.5} />
+          <h2 className="text-3xl font-k95 mb-4">Something went wrong</h2>
+          <p className="font-josefin text-white-smoke/70">{error}</p>
+          <Link to="/" className={button({ variant: 'primary', className: 'mt-6 inline-flex' })}>
             Go Home
           </Link>
         </div>
@@ -48,46 +51,48 @@ const ProjectsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-rich-black to-[#071a2a] text-white-smoke font-josefin">
-      <div className="max-w-5xl mx-auto pt-12 pb-24 px-4">
-        <div className="flex justify-between items-center mb-12">
+    <div className="min-h-[calc(100vh-73px)] app-shell text-white-smoke font-josefin">
+      <div className="max-w-6xl mx-auto pt-12 pb-24 px-4">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-12">
           <h1 className="text-4xl md:text-5xl font-k95 text-white-smoke">My Projects</h1>
-          <Link
-            to="/project-form"
-            className="bg-orange-500 hover:bg-orange-600 text-white-smoke font-bold py-3 px-6 rounded-lg transition-all transform hover:scale-105 shadow-lg"
-          >
+          <Link to="/create-project" className={button({ variant: 'primary' })}>
+            <Plus size={18} />
             Create New Project
           </Link>
         </div>
 
         {projects.length === 0 ? (
-          <div className="text-center bg-[#01080e]/60 p-8 rounded-2xl shadow-2xl border border-orange-500/20">
-            <h2 className="text-2xl font-bold mb-4">No Projects Found</h2>
-            <p className="text-lg text-white-smoke/80">
+          <Card className="text-center p-12" hover={false}>
+            <FolderKanban className="w-14 h-14 text-orange-500/50 mx-auto mb-4" strokeWidth={1.5} />
+            <h2 className="text-2xl font-bold mb-2">No Projects Found</h2>
+            <p className="text-lg text-white-smoke/70">
               You haven't created any projects yet. Click the button above to get started!
             </p>
-          </div>
+          </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {projects.map((project, index) => (
-              <motion.div
+              <Card
                 key={project.id}
-                className="bg-[#01080e]/60 p-6 rounded-2xl shadow-2xl border border-orange-500/20 backdrop-blur-sm flex flex-col justify-between"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
+                transition={{ duration: 0.5, delay: index * 0.08 }}
+                className="p-6 flex flex-col justify-between"
               >
                 <div>
-                  <h2 className="text-2xl font-bold mb-2 text-orange-400">{project.title}</h2>
-                  <p className="text-white-smoke/80 mb-4 line-clamp-3">{project.description}</p>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h2 className="text-2xl font-bold text-orange-400">{project.title}</h2>
+                    {project.completed && <CheckCircle2 size={20} className="text-green-400 shrink-0 mt-1" />}
+                  </div>
+                  <p className="text-white-smoke/70 mb-4 line-clamp-3">{project.description}</p>
                 </div>
                 <Link
                   to={`/roadmap/${project.id}`}
-                  className="text-center bg-blue-500 hover:bg-blue-600 text-white-smoke font-bold py-2 px-4 rounded-lg transition-all transform hover:scale-105 w-full"
+                  className={button({ variant: 'secondary', size: 'sm', className: 'w-full' })}
                 >
                   View Roadmap
                 </Link>
-              </motion.div>
+              </Card>
             ))}
           </div>
         )}
